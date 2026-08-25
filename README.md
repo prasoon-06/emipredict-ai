@@ -63,22 +63,93 @@ mlflow ui --backend-store-uri sqlite:///mlflow/mlflow.db
 Full comparison across all 8 models: [`reports/model_comparison_report.md`](reports/model_comparison_report.md).
 
 ## Project structure
+# Root Structure — EMIPredict AI
 
-See [`root_structure.md`](../root_structure.md) from the planning docs, or just browse the tree —
-it matches that spec: `data/`, `src/{data,features,models}/`, `mlflow/`, `models/`, `app/`,
-`reports/`, `tests/`.
+```
+emipredict-ai/
+│
+├── data/
+│   ├── raw/                       # original EMI_dataset (400K records) — gitignored, keep local/DVC
+│   ├── interim/                   # cleaned but not yet feature-engineered
+│   └── processed/                 # final train/val/test splits used for modeling
+│
+├── notebooks/
+│   ├── 01_eda.ipynb                # exploratory data analysis
+│   ├── 02_preprocessing.ipynb      # cleaning / missing values / dedup walkthrough
+│   ├── 03_feature_engineering.ipynb
+│   ├── 04_classification_models.ipynb
+│   └── 05_regression_models.ipynb
+│
+├── src/
+│   ├── __init__.py
+│   ├── config.py                   # paths, constants, random seed
+│   ├── data/
+│   │   ├── load_data.py
+│   │   ├── clean_data.py
+│   │   └── split_data.py
+│   ├── features/
+│   │   ├── build_features.py       # ratios, risk score, interaction features
+│   │   └── encoders.py             # categorical encoding / scaling
+│   ├── models/
+│   │   ├── train_classification.py # LogReg, RF, XGBoost, etc.
+│   │   ├── train_regression.py     # LinReg, RF, XGBoost, etc.
+│   │   ├── evaluate.py             # accuracy/precision/recall/F1/ROC-AUC, RMSE/MAE/R²/MAPE
+│   │   └── select_best_model.py
+│   └── utils/
+│       └── logging_utils.py
+│
+├── mlflow/
+│   ├── mlruns/                     # local MLflow tracking store (or remote URI in config)
+│   └── register_models.py          # promote best models to the registry
+│
+├── models/
+│   ├── best_classifier.pkl
+│   └── best_regressor.pkl
+│
+├── app/                             # Streamlit application
+│   ├── app.py                       # entry point / home page
+│   ├── pages/
+│   │   ├── 1_Predict_Eligibility.py
+│   │   ├── 2_Predict_Max_EMI.py
+│   │   ├── 3_Data_Explorer.py
+│   │   ├── 4_Model_Performance.py   # MLflow dashboard view
+│   │   └── 5_Admin_Data_Management.py
+│   └── components/
+│       └── ui_helpers.py
+│
+├── reports/
+│   ├── eda_report.md
+│   ├── model_comparison_report.md
+│   └── business_impact.md
+│
+├── tests/
+│   ├── test_data.py
+│   ├── test_features.py
+│   └── test_models.py
+│
+├── .streamlit/
+│   └── config.toml                  # theme + server settings for deployment
+│
+├── requirements.txt
+├── .gitignore
+├── README.md
+└── LICENSE
+```
+
+## Notes
+
+- **`data/raw/`** should be gitignored — 400K-record CSVs don't belong in Git history. Use Git LFS, DVC, or just keep it out of the repo and document the download link in `README.md`.
+- **`app/pages/`** uses Streamlit's automatic multi-page routing (files prefixed with a number control sidebar order).
+- **`mlflow/mlruns/`** works fine locally for development; for the deployed app, either bundle only the exported `models/*.pkl` (recommended — keeps the deployed app lightweight) or point MLflow to a remote tracking URI if you want the deployed app to query MLflow live.
+- **`models/`** holds only the two final serialized "champion" models the Streamlit app actually loads — not every experiment run.
+- Keep `requirements.txt` pinned (exact versions) since Streamlit Cloud rebuilds the environment from it on every deploy.
+
+
 
 ## Deploying
 
-This is built to deploy on **Streamlit Community Cloud** (the platform named in the original
-brief):
-
-1. Push this repo to GitHub. Note `.gitignore` excludes the raw CSV, the MLflow SQLite db, and
-   `mlflow_results/` — but **keeps** `models/best_classifier.pkl` and `models/best_regressor.pkl`,
-   since those are the only artifacts the deployed app actually needs.
-2. Go to [share.streamlit.io](https://share.streamlit.io) → connect GitHub → point it at
-   `app/app.py`.
-3. It installs from `requirements.txt` and gives you a public URL.
+This is built to deploy on **Streamlit Community Cloud** 
+LINK: https://emipredict-ai-6izvv9qzmezhzsamrptueu.streamlit.app/
 
 ## Notes / limitations of this build
 
