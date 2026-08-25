@@ -1,0 +1,20 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+
+# raw data (400K+ rows shouldn't live in git history)
+data/raw/*.csv
+data/processed/*.csv
+
+# mlflow local tracking store
+mlflow/mlflow.db
+mlflow/mlruns/
+
+# intermediate per-model training artifacts (kept locally, not needed once models/ has champions)
+mlflow_results/
+
+# streamlit
+.streamlit/secrets.toml
+
+.DS_Store
