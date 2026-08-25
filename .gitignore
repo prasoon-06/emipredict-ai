@@ -18,3 +18,4 @@ mlflow_results/
 .streamlit/secrets.toml
 
 .DS_Store
+/mlruns/
