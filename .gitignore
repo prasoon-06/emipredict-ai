@@ -5,6 +5,7 @@ venv/
 
 # raw data (400K+ rows shouldn't live in git history)
 data/raw/*.csv
+!data/raw/EMI_dataset.csv
 data/processed/*.csv
 
 # mlflow local tracking store
@@ -12,7 +13,7 @@ mlflow/mlflow.db
 mlflow/mlruns/
 
 # intermediate per-model training artifacts (kept locally, not needed once models/ has champions)
-mlflow_results/
+mlflow_results/*.pkl
 
 # streamlit
 .streamlit/secrets.toml
